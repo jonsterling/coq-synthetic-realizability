@@ -54,4 +54,9 @@ Section BipointedCodiscrete.
 
 End BipointedCodiscrete.
 
-(** The theorem of HRR that Orth(U) = Orth(∇2) for a uniform strictly bipointed object U does *not* hold in generality. It seems to require that all codiscrete objects are decidable. *)
+(** The theorem of HRR that Orth(U) = Orth(∇2) for a uniform strictly
+bipointed object U does *not* hold in generality. It seems to require
+that all codiscrete objects are decidable. But this is needed to check
+that Orth(Ω) = Orth(∇2). Of course, it may be that this is just not
+the right definition of discreteness; I suspect that for defining the
+correct notion of modest set, we would still want Orth(∇2). *)
