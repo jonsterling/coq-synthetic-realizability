@@ -1,0 +1,7 @@
+-R theories/ synrl
+-arg -impredicative-set
+-arg -w
+-arg all
+
+theories/Preamble.v
+theories/Orthogonality.v
