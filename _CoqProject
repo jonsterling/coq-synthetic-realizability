@@ -5,3 +5,5 @@
 
 theories/Preamble.v
 theories/Orthogonality.v
+theories/Codiscrete.v
+theories/Interval.v
