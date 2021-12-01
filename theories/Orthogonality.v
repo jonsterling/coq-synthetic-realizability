@@ -16,96 +16,96 @@ Proof.
   by congruence.
 Qed.
 
-Lemma balanced_converse {A B} (f : A → B) : is_isomorphism f → injective f ∧ surjective f.
+Lemma iso_injective {A B} (f : A → B) : is_isomorphism f → injective f.
 Proof.
-  move=> iso; split.
-  - move=> a a' h.
-    case: (iso (f a)) (iso (f a'))=> [za [hza1 /(_ a') hza2]] [za' [hza'1 hza'2]].
-    by move: (hza'2 za) (hza'2 a); rewrite hza2//=; move=> <-//= <-//=; congruence.
-  - move=> b.
-    case: (iso b)=> a [ha1 _].
-    by exists a.
+  move=> iso a a' h.
+  case: (iso (f a)) (iso (f a'))=> [za [hza1 /(_ a') hza2]] [za' [hza'1 hza'2]].
+  by move: (hza'2 za) (hza'2 a); rewrite hza2//=; move=> <-//= <-//=; congruence.
 Qed.
 
-Definition restrict_fam {I A A'} (θ : A → A') (X : I → Type) :
-  ∀ i, (A' → X i) → (A → X i).
-Proof. by move=> i f a; apply/f/θ/a. Defined.
+Lemma iso_surjective {A B} (f : A → B) : is_isomorphism f → surjective f.
+Proof. by move=> iso b; case: (iso b) => a [? _]; exists a. Qed.
 
-Definition orthogonal_to {I A A'} (θ : A → A') (X : I → Type) : Prop :=
+Section Orthogonality.
+  Context {I A A'} (θ : A → A') (X : I → Type).
+
+  Definition restrict_fam : ∀ i, (A' → X i) → (A → X i) :=
+    λ i f a, f (θ a).
+
+  Definition orthogonal_to :=
+    ∀ i, is_isomorphism (restrict_fam i).
+End Orthogonality.
+
+(*Definition orthogonal_to {I A A'} (θ : A → A') (X : I → Type) : Prop :=
   ∀ i, is_isomorphism (restrict_fam θ X i).
+*)
 
-Infix "⫫" := orthogonal_to (at level 10).
+Class OrthogonalTo {I A A'} (θ : A → A') (X : I → Type) :=
+  lift : orthogonal_to θ X.
 
-Definition orthogonal_to_type {I} (A : Type) (X : I → Type) := trm A ⫫ X.
+Infix "⫫" := OrthogonalTo (at level 10).
 
-Notation "{ A } ⫫ X" := (orthogonal_to_type A X) (at level 10).
+Notation "[ A ] ⫫ X" := (trm A ⫫ X) (at level 10).
 
 Definition has_surjection (E B : Type) : Prop := ∃ f : E → B, surjective f.
-Infix "⇾" := has_surjection (right associativity, at level 60).
 
-Lemma covers_𝟙_inh {A} : A ⇾ 𝟙 → ∃ x : A, True.
+Class Covers (E B : Type) :=
+  cov : has_surjection E B.
+
+Infix "⇾" := Covers (right associativity, at level 60).
+
+Lemma covers_𝟙_inh {A} `{A ⇾ 𝟙} : ∃ x : A, True.
 Proof.
-  move=> [p psurj].
+  case: cov=> p psurj.
   case: (psurj _)=> a _.
   by exists a.
 Qed.
 
+Section Covers.
+  Context {I} {X : I → Type}.
 
-Lemma orth_surj {I A B} {X : I → Type} : A ⇾ B → {A} ⫫ X → {B} ⫫ X.
-Proof.
-  move=> [p psurj] orthA i f.
-  case: (orthA i (λ a : A, f (p a)))=> xi [/equal_f h1xi h2xi].
-  exists xi; split.
-  - apply: funext.
-    move=> b.
-    case: (psurj b)=> a pab.
-    rewrite /restrict_fam.
-    have->:(trm B b = trm A a) by [].
-    rewrite /restrict_fam in h1xi.
-    by rewrite h1xi pab.
-  - by move=> ? h; apply/h2xi/funext=>?; rewrite -h.
-Qed.
+  Lemma orth_cover {A B} `{A ⇾ B} `{[A] ⫫ X} : [B] ⫫ X.
+  Proof.
+    move=> i f.
+    case: cov=> [p psurj].
+    case: (lift i (λ a : A, f (p a)))=> xi [/equal_f h1xi h2xi].
+    exists xi; split.
+    - apply: funext.
+      move=> b.
+      case: (psurj b)=> a pab.
+      rewrite /restrict_fam.
+      have->:(trm B b = trm A a) by [].
+      rewrite /restrict_fam in h1xi.
+      by rewrite h1xi pab.
+    - by move=> ? h; apply/h2xi/funext=>?; rewrite -h.
+  Qed.
 
-Lemma inh_orth_closed_under_subobjects {I A} {X : I → Type} {P : ∀ i, X i → Prop} :
-  A ⇾ 𝟙
-  → {A} ⫫ X
-  → {A} ⫫ λ i, {x : X i | P i x}.
-Proof.
-  move=> /covers_𝟙_inh [a0 _] X_orth i f.
-  case: (X_orth i (λ a, sval (f a)))=> xi [h1xi h2xi].
-  unshelve esplit.
-  - move=> u.
+  Instance orth_subfamily {A} {P : ∀ i, X i → Prop} `{A ⇾ 𝟙} `{[A] ⫫ X} : [A] ⫫ λ i, {x : X i | P i x}.
+  Proof.
+    case: covers_𝟙_inh=> a0 _.
+    move=> i f.
+    case: (lift i (λ a, sval (f a)))=> xi [h1xi h2xi].
     unshelve esplit.
-    + by apply: (xi).
-    + rewrite /restrict_fam in h1xi.
-      move: (equal_f h1xi a0)=> h.
-      rewrite (_ : trm A a0 = u) in h; first by [].
-      rewrite h.
-      apply: svalP.
-  - split=>//=.
-    + rewrite /restrict_fam.
-      apply: funext=> a.
-      apply: eq_sig=>//=.
-      by apply: (equal_f h1xi).
-    + move=> x'i h.
-      apply: funext=> u.
-      apply: eq_sig=>//=.
-      rewrite (h2xi (λ u, sval (x'i u)))//=.
-      by rewrite -h.
-Qed.
-
-Definition to_slice {A B} I (f : A → B) : I * A → I * B :=
-  λ u, (fst u, f (snd u)).
-
-Lemma surjection_to_slice {X E B} (p : E → B) :
-  surjective p
-  → surjective (to_slice X p).
-Proof.
-  move=> psurj [x b].
-  case: (psurj b)=> e he.
-  exists (x, e).
-  by rewrite /to_slice he.
-Qed.
+    - move=> u.
+      unshelve esplit.
+      + by apply: (xi).
+      + rewrite /restrict_fam in h1xi.
+        move: (equal_f h1xi a0)=> h.
+        rewrite (_ : trm A a0 = u) in h; first by [].
+        rewrite h.
+        by apply: svalP.
+    - split=>//=.
+      + rewrite /restrict_fam.
+        apply: funext=> a.
+        apply: eq_sig=>//=.
+        by apply: (equal_f h1xi).
+      + move=> x'i h.
+        apply: funext=> u.
+        apply: eq_sig=>//=.
+        rewrite (h2xi (λ u, sval (x'i u)))//=.
+        by rewrite -h.
+  Qed.
+End Covers.
 
 Lemma surjection_cancel {E B C} (p : E → B) {c1 c2 : B → C} :
   surjective p
@@ -123,63 +123,66 @@ Definition precomp {J A} B (a : J → A) : (A → B) → (J → B) :=
 
 Notation "B ^[ f ]" := (precomp B f) (at level 10).
 
-(** Proposition 2.5 of HRR87 *)
-Lemma orth_reduce_to_pair {I A} {X : I → Type} :
-  A ⇾ 𝟙
-  → (∀ i, ∀ u : A → X i, ∀ a1 a2 : A, u a1 = u a2)
-  → {A} ⫫ X.
+Lemma covers_compose {A B C} `{A ⇾ B} `{B ⇾ C} : A ⇾ C.
 Proof.
-  move=> /covers_𝟙_inh [a0 _] h i xi.
-  unshelve esplit.
-  - move=> u.
-    apply: xi.
-    exact: a0.
-  - split.
-    + rewrite /restrict_fam.
+  case: (@cov A B)=> f hf.
+  case: (@cov B C)=> g hg.
+  exists (g ∘ f).
+  move=> c.
+  case: (hg c)=> b hb.
+  case: (hf b)=> a ha.
+  by exists a; rewrite /= ha hb.
+Qed.
+
+Section Orthogonality.
+  Context {I} {X : I → Type}.
+
+  (** Proposition 2.5 of HRR87 *)
+  Lemma orth_reduce_to_pair {A} `{A ⇾ 𝟙} :
+    (∀ i, ∀ u : A → X i, ∀ a1 a2 : A, u a1 = u a2)
+    → [A] ⫫ X.
+  Proof.
+    case: covers_𝟙_inh=> a0 _.
+    move=> h i xi.
+    exists (λ _, xi a0); split.
+    - rewrite /restrict_fam.
       apply: funext=>?.
       by apply: h.
-    + move=> xi0.
+    - move=> xi0.
       rewrite /restrict_fam.
       move/equal_f/(_ a0)=> h'.
       apply: funext=> u.
       rewrite -h'.
       by congr xi0.
-Qed.
+  Qed.
 
-Lemma orth_reduce_to_pair_converse {I A} {X : I → Type} :
-  A ⇾ 𝟙
-  → {A} ⫫ X
-  → ∀ i, ∀ u : A → X i, ∀ a1 a2 : A, u a1 = u a2.
-Proof.
-  move=> /covers_𝟙_inh [a0 _] orthA i u a1 a2.
-  case: (orthA i u)=> xi [/equal_f h1xi h2xi].
-  rewrite /restrict_fam in h1xi, h2xi.
-  by rewrite -(h1xi a1) -(h1xi a2).
-Qed.
+  Lemma orth_reduce_to_pair_converse {A} `{A ⇾ 𝟙} `{[A] ⫫ X}:
+    ∀ i, ∀ u : A → X i, ∀ a1 a2 : A, u a1 = u a2.
+  Proof.
+    case: covers_𝟙_inh=> a0 _.
+    move=> i u a1 a2.
+    case: (lift i u)=> xi [/equal_f h1xi h2xi].
+    rewrite /restrict_fam in h1xi, h2xi.
+    by rewrite -(h1xi a1) -(h1xi a2).
+  Qed.
 
-(** Proposition 2.7 of HRR87 *)
-Lemma orth_surj_converse {I A B} {X : I → Type} (a : bool → A) :
-  B ⇾ A
-  → A ⇾ 𝟙
-  → surjective (B ^[ a ])
-  → {A} ⫫ X
-  → {B} ⫫ X.
-Proof.
-  move=> [p psurj] /covers_𝟙_inh [a0 _] asurjB orthA.
-  apply: orth_reduce_to_pair.
-  - unshelve esplit; first by [].
-    move=> u.
-    case: (psurj a0)=> b _.
-    by exists b.
-  - move=> i u b1 b2.
+  (** Proposition 2.7 of HRR87 *)
+  Lemma orth_cover_converse {A B} `{B ⇾ A} `{A ⇾ 𝟙} `{[A] ⫫ X} (a : 𝟚 → A) :
+    surjective (B ^[ a ])
+    → [B] ⫫ X.
+  Proof.
+    case: covers_𝟙_inh=> a0 _.
+    move=> asurjB.
+    apply: orth_reduce_to_pair; first by apply: covers_compose.
+    move=> i u b1 b2.
     pose b12 := (λ i, if i then b1 else b2).
-    rewrite (eq_refl : b1 = b12 true) (eq_refl : b2 = b12 false).
-    move: {b1 b2} b12.
+    fold (b12 true) (b12 false); move: {b1 b2} b12.
     apply: equal_f.
-    apply: (surjection_cancel (B ^[a]) asurjB).
+    apply: surjection_cancel=>//=.
     apply: funext=> b //=.
     rewrite /precomp.
-    case: (orthA i (u ∘ b))=> xi [/equal_f h1xi h2xi].
+    case: (lift i (u ∘ b))=> xi [/equal_f h1xi h2xi].
     rewrite /restrict_fam /comp in h1xi, h2xi.
     by rewrite -(h1xi (a true)) (h1xi (a false)).
-Qed.
+  Qed.
+End Orthogonality.

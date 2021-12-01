@@ -24,3 +24,10 @@ Admitted.
 
 Instance : ∀ A B, Codiscrete A → (∀ x, Codiscrete (B x)) → Codiscrete {x : A & B x}.
 Admitted.
+
+
+Definition uniform (A : Type) : Prop :=
+  ∃ A' : Type, Codiscrete A' ∧ (A' ⇾ A).
+
+Class Uniform (A : Type) :=
+  unif : uniform A.

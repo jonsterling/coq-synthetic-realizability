@@ -1,14 +1,18 @@
 From synrl Require Import Preamble Orthogonality Codiscrete.
 
-Section Interval.
+Definition 𝕀 := ∇ 𝟚.
 
-  (** HRR prove that Orth(∇𝟚) = Orth(S) for any strictly bipointed codiscrete object S. We generalize this result to realizability over a topos other than Set; to do so, we must assume that S is decidable. *)
+Instance : 𝕀 ⇾ 𝟙.
+Proof. by exists (λ _, Logic.I)=> ?; exists (Codisc.ret true). Qed.
 
-  Definition 𝕀 := ∇ bool.
+Section BipointedCodiscrete.
+
+  (** HRR prove that Orth(𝕀) = Orth(S) for any strictly bipointed codiscrete object S. We generalize this result to realizability over a topos other than Set; to do so, we must assume that S is decidable. *)
+
 
   Context {S} `{Codiscrete S} `{Decidable S} `{StrictlyBipointed S}.
 
-  Lemma bipointed_codiscrete_set_covers_𝕀 : S ⇾ 𝕀.
+  Instance : S ⇾ 𝕀.
   Proof.
     case: sbptd => [s1 [s2 sdisj]].
     unshelve esplit.
@@ -21,7 +25,7 @@ Section Interval.
       + exact: (Codisc.rec (λ i, if i then s1 else s2)).
       + apply: Codisc.ind.
         match goal with
-          [|- ∀ x : bool, iota (@?P x) (@?prf x) = _] =>
+          [|- ∀ x : 𝟚, iota (@?P x) (@?prf x) = _] =>
           move=> x;
           case: (iota_prop (P x) (prf x));
           move: x
@@ -34,25 +38,13 @@ Section Interval.
           by move=> ?; apply: sdisj.
   Qed.
 
-  Lemma to_orth_𝕀 {I} {X : I → Type} :
-    {S} ⫫ X
-    → {𝕀} ⫫ X.
-  Proof.
-    move=> orthS.
-    apply: orth_surj=>//=.
-    by apply: bipointed_codiscrete_set_covers_𝕀.
-  Qed.
+  Instance to_orth_𝕀 {I} {X : I → Type} `{[S] ⫫ X} : [𝕀] ⫫ X.
+  Proof. by apply: orth_cover. Qed.
 
-  Lemma from_orth_𝕀 {I} {X : I → Type} :
-    {𝕀} ⫫ X
-    → {S} ⫫ X.
+  Instance from_orth_𝕀 {I} {X : I → Type} `{[𝕀] ⫫ X} : [S] ⫫ X.
   Proof.
-    move=> orthS.
-    unshelve apply: orth_surj_converse=>//=.
+    unshelve apply: orth_cover_converse =>//=.
     - exact: Codisc.ret.
-    - by apply: bipointed_codiscrete_set_covers_𝕀.
-    - unshelve esplit; first by [].
-      by move=> ?; exists (Codisc.ret true).
     - move=> s.
       exists (Codisc.rec s).
       rewrite /precomp.
@@ -60,4 +52,6 @@ Section Interval.
       by apply: Codisc.rec_beta.
   Qed.
 
-End Interval.
+End BipointedCodiscrete.
+
+(** The theorem of HRR that Orth(U) = Orth(∇2) for a uniform strictly bipointed object U does *not* hold in generality. It seems to require that all codiscrete objects are decidable. *)

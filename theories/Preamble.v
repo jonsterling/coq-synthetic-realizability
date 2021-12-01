@@ -75,6 +75,7 @@ Hint Resolve proofirr : core.
 
 Infix "∘" := comp (right associativity, at level 60).
 Notation "𝟙" := True.
+Notation "𝟚" := bool.
 
 
 Definition projective (B : Type) : Prop :=
