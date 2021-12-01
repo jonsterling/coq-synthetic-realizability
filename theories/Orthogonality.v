@@ -51,7 +51,7 @@ Proof.
 Qed.
 
 
-Lemma orth_descent {I A B} {X : I → Type} : A ⇾ B → {A} ⫫ X → {B} ⫫ X.
+Lemma orth_surj {I A B} {X : I → Type} : A ⇾ B → {A} ⫫ X → {B} ⫫ X.
 Proof.
   move=> [p psurj] orthA i f.
   case: (orthA i (λ a : A, f (p a)))=> xi [/equal_f h1xi h2xi].
@@ -123,7 +123,7 @@ Definition precomp {J A} B (a : J → A) : (A → B) → (J → B) :=
 
 Notation "B ^[ f ]" := (precomp B f) (at level 10).
 
-(* Proposition 2.5 of HRR87 *)
+(** Proposition 2.5 of HRR87 *)
 Lemma orth_reduce_to_pair {I A} {X : I → Type} :
   A ⇾ 𝟙
   → (∀ i, ∀ u : A → X i, ∀ a1 a2 : A, u a1 = u a2)
@@ -157,8 +157,8 @@ Proof.
   by rewrite -(h1xi a1) -(h1xi a2).
 Qed.
 
-(* Proposition 2.7 of HRR87 *)
-Lemma orth_descent_converse {I A B} {X : I → Type} (a : bool → A) :
+(** Proposition 2.7 of HRR87 *)
+Lemma orth_surj_converse {I A B} {X : I → Type} (a : bool → A) :
   B ⇾ A
   → A ⇾ 𝟙
   → surjective (B ^[ a ])

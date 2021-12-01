@@ -80,7 +80,10 @@ Notation "𝟙" := True.
 Definition projective (B : Type) : Prop :=
   ∀ E (r : E → B), surjective r → ∃ i : B → E, ∀ b : B, r (i b) = b.
 
-Lemma bool_projective : projective bool.
+Class Projective (B : Type) :=
+  choice : projective B.
+
+Instance : Projective bool.
 Proof.
   move=> E p hp.
   case: (hp true)=> e0 he0.
@@ -89,3 +92,16 @@ Proof.
   - case; [exact: e0 | exact: e1].
   - by case.
 Qed.
+
+
+Definition strictly_bipointed (A : Type) : Prop :=
+  ∃ a1 a2 : A, ¬ (a1 = a2).
+
+Definition decidable (A : Type) : Prop :=
+  ∀ a1 a2 : A, a1 = a2 ∨ ¬ (a1 = a2).
+
+Class Decidable (A : Type) :=
+  dcd : decidable A.
+
+Class StrictlyBipointed (A : Type) : Prop :=
+  sbptd : strictly_bipointed A.
