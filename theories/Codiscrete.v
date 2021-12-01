@@ -33,7 +33,7 @@ Section Interval.
   (** Relative to HRR, we must add the decidability assumption. *)
   Context {S} `{Codiscrete S} `{Decidable S} `{StrictlyBipointed S}.
 
-  Lemma codiscrete_set_covers_𝕀 : S ⇾ 𝕀.
+  Lemma bipointed_codiscrete_set_covers_𝕀 : S ⇾ 𝕀.
   Proof.
     case: sbptd => [s1 [s2 sdisj]].
     unshelve esplit.
@@ -59,23 +59,23 @@ Section Interval.
           by move=> ?; apply: sdisj.
   Qed.
 
-  Lemma prop_6_1_i_fwd {I} {X : I → Type} :
+  Lemma to_orth_𝕀 {I} {X : I → Type} :
     {S} ⫫ X
     → {𝕀} ⫫ X.
   Proof.
     move=> orthS.
     apply: orth_surj=>//=.
-    by apply: codiscrete_set_covers_𝕀.
+    by apply: bipointed_codiscrete_set_covers_𝕀.
   Qed.
 
-  Lemma prop_6_1_i_bwd {I} {X : I → Type} :
+  Lemma from_orth_𝕀 {I} {X : I → Type} :
     {𝕀} ⫫ X
     → {S} ⫫ X.
   Proof.
     move=> orthS.
     unshelve apply: orth_surj_converse=>//=.
     - exact: Codisc.ret.
-    - by apply: codiscrete_set_covers_𝕀.
+    - by apply: bipointed_codiscrete_set_covers_𝕀.
     - unshelve esplit; first by [].
       by move=> ?; exists (Codisc.ret true).
     - move=> s.
