@@ -10,15 +10,19 @@ Section BipointedCodiscrete.
   (** HRR prove that Orth(𝕀) = Orth(S) for any strictly bipointed codiscrete object S. We generalize this result to realizability over a topos other than Set; to do so, we must assume that S is decidable. *)
 
 
-  Context {S} `{Codiscrete S} `{Decidable S} `{StrictlyBipointed S}.
+  Context {S} `{Codiscrete S} `{StrictlyBipointed S}.
 
+  Parameter codisc_dcd : ∀ x y : S, ∇ (x = y ∨ ¬ (x = y)).
+
+  #[global]
   Instance : S ⇾ 𝕀.
   Proof.
     case: sbptd => [s1 [s2 sdisj]].
     unshelve esplit.
     - move=> s.
       apply: (iota (λ i, (s = s1 → i = Codisc.ret true) ∧ (¬ (s = s1) → i = Codisc.ret false))).
-      case: (dcd s s1).
+      move: (codisc_dcd s s1).
+      apply: Codisc.rec; case.
       + abstract by [move=> ->; exists (Codisc.ret true); split; [by split | move=> i [hi1 hi2]; by rewrite -hi1]].
       + abstract by [move=> sns1; exists (Codisc.ret false); split; [by split| move=> i [hi1 hi2]; by rewrite -hi2]].
     - move=> i; unshelve esplit; move: i.
