@@ -50,7 +50,7 @@ Admitted.
 Instance Codiscrete_true : Codiscrete 𝟙.
 Admitted.
 
-(* This holds because the constant objects functor for a realizability topos additionally preserves the initial object. *)
+(* This holds because the constant objects functor for a realizability topos additionally preserves the initial object, i.e. the subtopos is dense *)
 Instance Codiscrete_false : Codiscrete False.
 Admitted.
 
