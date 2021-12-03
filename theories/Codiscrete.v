@@ -47,13 +47,19 @@ Admitted.
 Instance Codiscrete_and {P Q : Prop} `{Codiscrete P} `{Codiscrete Q} : Codiscrete (P ∧ Q).
 Admitted.
 
-Instance Codiscrete_one : Codiscrete 𝟙.
+Instance Codiscrete_true : Codiscrete 𝟙.
+Admitted.
+
+(* This holds because the constant objects functor for a realizability topos additionally preserves the initial object. *)
+Instance Codiscrete_false : Codiscrete False.
 Admitted.
 
 (* This holds because the constant objects functor for a realizability topos additionally preserves covers. *)
 Instance Codiscrete_exists {A} {P : A → Prop} `{Codiscrete A} `{∀ x : A, Codiscrete (P x)} : Codiscrete (∃ x : A, P x).
 Admitted.
 
+Instance Codisc_not {P} : Codiscrete (¬ P).
+Proof. by apply: Codiscrete_pi. Qed.
 
 Definition uniform (A : Type) : Prop :=
   ∃ A' : Type, Codiscrete A' ∧ (A' ⇾ A).
@@ -61,14 +67,9 @@ Definition uniform (A : Type) : Prop :=
 Class Uniform (A : Type) :=
   unif : uniform A.
 
-
-Definition codisc_false : Prop := ∇-p False.
 Definition codisc_or (P Q : Prop) `{Codiscrete P} `{Codiscrete Q} := ∇-p (P ∨ Q).
-
-Notation "'∇⊥'" := (∇-p False).
-Notation "∇¬ P" := (P → ∇⊥) (at level 10).
 
 Infix "∇∨ " := codisc_or (at level 10).
 
 Class CodiscretelyDecidable (A : Type) `{Codiscrete A} :=
-  codisc_dcd : ∀ x y : A, (x = y) ∇∨ (∇¬ (x = y)).
+  codisc_dcd : ∀ x y : A, (x = y) ∇∨ (¬ (x = y)).

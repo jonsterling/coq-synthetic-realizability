@@ -19,7 +19,7 @@ Section BipointedCodiscrete.
   Context {S} `{Codiscrete S} `{StrictlyBipointed S} `{CodiscretelyDecidable S}.
 
   Local Definition covering_map_graph (s0 : S) : S → 𝕀 → Prop :=
-    λ s i, (s0 = s → i = Codisc.ret true) ∧ (∇¬(s0 = s) → i = Codisc.ret false).
+    λ s i, (s0 = s → i = Codisc.ret true) ∧ (¬(s0 = s) → i = Codisc.ret false).
 
   Local Lemma covering_graph_functional (s0 : S) : Functional (covering_map_graph s0).
   Proof.
@@ -28,12 +28,12 @@ Section BipointedCodiscrete.
     - move=> ss0.
       exists (Codisc.ret true); split.
       + split=>//= h.
-        by apply: CodiscProp.rec; last by apply: h.
-      + by move=> ? [h _]; rewrite h.
+        by case: h.
+      + by move=> ? [h' _]; rewrite h'.
     - move=> h.
       exists (Codisc.ret false); split.
       + split=>//= s0s.
-        by apply: CodiscProp.rec; last by apply: h.
+        by case: h.
       + move=> i [h1 h2].
         rewrite h2//= => ?.
         by apply: h.
@@ -51,8 +51,7 @@ Section BipointedCodiscrete.
       + apply: Codisc.ind=> x.
         rewrite Codisc.rec_beta.
         apply: funcompr_compute.
-        case: x; split=>//= h.
-        by apply: CodiscProp.rec; last by apply: h.
+        case: x; split=>//= [].
   Qed.
 
   Instance to_orth_𝕀 {I} {X : I → Type} `{[S] ⫫ X} : [𝕀] ⫫ X.
