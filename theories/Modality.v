@@ -17,7 +17,7 @@ Class RegularSubuniverse (P : Type → Prop) : Prop :=
 Class Modal (modal : Type → Prop) (A : Type) : Prop :=
   mod : modal A.
 
-(* The reflection of types in to the lex subuniverse. *)
+(* The reflection of types into the lex subuniverse. *)
 Module Mod.
   Axiom T : ∀ P : (Type → Prop), ∀ `{LexSubuniverse P}, Type → Type.
 
