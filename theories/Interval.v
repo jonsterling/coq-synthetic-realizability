@@ -5,6 +5,7 @@ Definition 𝕀 := ∇ 𝟚.
 Instance : 𝕀 ⇾ 𝟙.
 Proof. by exists (λ _, Logic.I)=> ?; exists (Codisc.ret true). Qed.
 
+
 Section BipointedCodiscrete.
 
   (** HRR prove that Orth(𝕀) = Orth(S) for any strictly bipointed
@@ -15,27 +16,28 @@ Section BipointedCodiscrete.
   equivalence class is decidable. *)
 
 
-  Context {S} `{Codiscrete S} `{StrictlyBipointed S}.
-
-  Parameter codisc_dcd : ∀ x y : S, ∇ (x = y ∨ ¬ (x = y)).
+  Context {S} `{Codiscrete S} `{StrictlyBipointed S} `{CodiscretelyDecidable S}.
 
   Local Definition covering_map_graph (s0 : S) : S → 𝕀 → Prop :=
-    λ s i, (s0 = s → i = Codisc.ret true) ∧ (¬ (s0 = s) → i = Codisc.ret false).
+    λ s i, (s0 = s → i = Codisc.ret true) ∧ (∇¬(s0 = s) → i = Codisc.ret false).
 
   Local Lemma covering_graph_functional (s0 : S) : Functional (covering_map_graph s0).
   Proof.
     move=> s.
-    apply: Codisc.rec (codisc_dcd s s0); case.
+    generalize (codisc_dcd s s0); apply: CodiscProp.rec; case.
     - move=> ss0.
       exists (Codisc.ret true); split.
-      + by split=>//=; case.
+      + split=>//= h.
+        by apply: CodiscProp.rec; last by apply: h.
       + by move=> ? [h _]; rewrite h.
     - move=> h.
       exists (Codisc.ret false); split.
-      + by split=>//= ?; case: h.
-      + by move=> ? [_ h']; rewrite h'//= => ?; case: h.
+      + split=>//= s0s.
+        by apply: CodiscProp.rec; last by apply: h.
+      + move=> i [h1 h2].
+        rewrite h2//= => ?.
+        by apply: h.
   Qed.
-
 
   #[global]
   Instance : S ⇾ 𝕀.
@@ -49,7 +51,8 @@ Section BipointedCodiscrete.
       + apply: Codisc.ind=> x.
         rewrite Codisc.rec_beta.
         apply: funcompr_compute.
-        by case: x; by split.
+        case: x; split=>//= h.
+        by apply: CodiscProp.rec; last by apply: h.
   Qed.
 
   Instance to_orth_𝕀 {I} {X : I → Type} `{[S] ⫫ X} : [𝕀] ⫫ X.
