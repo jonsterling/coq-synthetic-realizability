@@ -7,7 +7,12 @@ Proof. by exists (λ _, Logic.I)=> ?; exists (Codisc.ret true). Qed.
 
 Section BipointedCodiscrete.
 
-  (** HRR prove that Orth(𝕀) = Orth(S) for any strictly bipointed codiscrete object S. We generalize this result to realizability over a topos other than Set; to do so, we must assume that S is decidable. *)
+  (** HRR prove that Orth(𝕀) = Orth(S) for any strictly bipointed
+  codiscrete object S. We generalize this result to realizability over
+  a topos other than Set; to do so, we must assume that S is
+  codiscretely decidable. In fact, a slightly weaker but somewhat
+  unnatural assumption would suffice: that S has a basepoint whose
+  equivalence class is decidable. *)
 
 
   Context {S} `{Codiscrete S} `{StrictlyBipointed S}.
@@ -44,7 +49,7 @@ Section BipointedCodiscrete.
       + apply: Codisc.ind=> x.
         rewrite Codisc.rec_beta.
         apply: funcompr_compute.
-        case: x; by split.
+        by case: x; by split.
   Qed.
 
   Instance to_orth_𝕀 {I} {X : I → Type} `{[S] ⫫ X} : [𝕀] ⫫ X.
