@@ -4,6 +4,7 @@ Export Modality.
 
 Axiom codiscrete : Type → Prop.
 
+Declare Instance codiscrete_sigma_clsed : SigmaClosedSubuniverse codiscrete.
 Declare Instance codiscrete_lex : LexSubuniverse codiscrete.
 Declare Instance codiscrete_dense : DenseSubuniverse codiscrete.
 Declare Instance codiscrete_regular : RegularSubuniverse codiscrete.

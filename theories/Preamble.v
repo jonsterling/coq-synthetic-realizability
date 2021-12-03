@@ -129,3 +129,28 @@ Class Decidable (A : Type) :=
 
 Class StrictlyBipointed (A : Type) : Prop :=
   sbptd : strictly_bipointed A.
+
+
+
+Definition is_isomorphism {A B} (f : A → B) : Prop :=
+  ∀ x : B, exists! y : A, f y = x.
+
+Lemma balanced {A B} (f : A → B) : injective f → surjective f → is_isomorphism f.
+Proof.
+  move=> inj surj b.
+  case: (surj b)=> a ha.
+  exists a; split=>//=.
+  move=> a' ha'.
+  apply: inj.
+  by congruence.
+Qed.
+
+Lemma iso_injective {A B} (f : A → B) : is_isomorphism f → injective f.
+Proof.
+  move=> iso a a' h.
+  case: (iso (f a)) (iso (f a'))=> [za [hza1 /(_ a') hza2]] [za' [hza'1 hza'2]].
+  by move: (hza'2 za) (hza'2 a); rewrite hza2//=; move=> <-//= <-//=; congruence.
+Qed.
+
+Lemma iso_surjective {A B} (f : A → B) : is_isomorphism f → surjective f.
+Proof. by move=> iso b; case: (iso b) => a [? _]; exists a. Qed.

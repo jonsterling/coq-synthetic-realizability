@@ -1,12 +1,21 @@
 From synrl Require Import Preamble.
 
-Class LexSubuniverse (P : Type → Prop) : Prop :=
+Class SigmaClosedSubuniverse (P : Type → Prop) : Prop :=
   {modal_eq : ∀ A (x y : A), P A → P (x = y);
    modal_pi : ∀ A B, (∀ x, P (B x)) → P (∀ x : A, B x);
    modal_sigma : ∀ A B, P A → (∀ x, P (B x)) → P {x : A & B x};
    modal_subset : ∀ A (B : A → Prop), P A → (∀ x, P (B x)) → P {x : A | B x};
    modal_and : ∀ (A B : Prop), P A → P B → P (A ∧ B);
    modal_true : P True}.
+
+Definition const {B A} : B → A → B :=
+  λ b _, b.
+
+Definition connected (P : Type → Prop) (A : Type) : Prop :=
+  ∀ B, P B → @is_isomorphism B (A → B) const.
+
+Class LexSubuniverse P `{SigmaClosedSubuniverse P} : Prop :=
+  {connected_eq : ∀ A, connected P A → ∀ x y : A, connected P (x = y)}.
 
 Class DenseSubuniverse (P : Type → Prop) : Prop :=
   {modal_false : P False}.
@@ -17,12 +26,12 @@ Class RegularSubuniverse (P : Type → Prop) : Prop :=
 Class Modal (modal : Type → Prop) (A : Type) : Prop :=
   mod : modal A.
 
-(* The reflection of types into the lex subuniverse. *)
+(* The reflection of types into the subuniverse. *)
 Module Mod.
-  Axiom T : ∀ P : (Type → Prop), ∀ `{LexSubuniverse P}, Type → Type.
+  Axiom T : ∀ P : (Type → Prop), ∀ `{SigmaClosedSubuniverse P}, Type → Type.
 
   Section Operations.
-    Context {P : Type → Prop} `{LexSubuniverse P}.
+    Context {P : Type → Prop} `{SigmaClosedSubuniverse P}.
 
     Axiom ret : ∀ {A}, A → T P A.
     Axiom rec : ∀ {A B} `{Modal P B}, (A → B) → T P A → B.
@@ -34,10 +43,10 @@ End Mod.
 
 (* The reflection of propositions into the lex subuniverse. *)
 Module ModP.
-  Axiom T : ∀ P : (Type → Prop), ∀ `{LexSubuniverse P}, Prop → Prop.
+  Axiom T : ∀ P : (Type → Prop), ∀ `{SigmaClosedSubuniverse P}, Prop → Prop.
 
   Section Operations.
-    Context {P : Type → Prop} `{LexSubuniverse P}.
+    Context {P : Type → Prop} `{SigmaClosedSubuniverse P}.
 
     Axiom ret : ∀ {A : Prop}, A → T P A.
     Axiom rec : ∀ {A : Prop} {B} `{Modal P B}, (A → B) → T P A → B.
