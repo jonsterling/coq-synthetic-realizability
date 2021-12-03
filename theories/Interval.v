@@ -14,40 +14,37 @@ Section BipointedCodiscrete.
 
   Parameter codisc_dcd : ∀ x y : S, ∇ (x = y ∨ ¬ (x = y)).
 
-  Local Definition covering_map_graph (s1 s2 : S) : S → 𝕀 → Prop :=
-    λ s i, (s = s1 → i = Codisc.ret true) ∧ (¬ (s = s1) → i = Codisc.ret false).
+  Local Definition covering_map_graph (s0 : S) : S → 𝕀 → Prop :=
+    λ s i, (s0 = s → i = Codisc.ret true) ∧ (¬ (s0 = s) → i = Codisc.ret false).
 
-  Local Lemma covering_graph_total (s1 s2 : S) : ¬ (s1 = s2) → ∀ s : S, exists! i : 𝕀, covering_map_graph s1 s2 s i.
+  Local Lemma covering_graph_functional (s0 : S) : Functional (covering_map_graph s0).
   Proof.
-    move=> disj s.
-    apply: Codisc.rec (codisc_dcd s s1); case.
-    - by move=> ->; exists (Codisc.ret true); split; [by split | move=> i [hi1 hi2]; by rewrite -hi1].
-    - by move=> sns1; exists (Codisc.ret false); split; [by split| move=> i [hi1 hi2]; by rewrite -hi2].
+    move=> s.
+    apply: Codisc.rec (codisc_dcd s s0); case.
+    - move=> ss0.
+      exists (Codisc.ret true); split.
+      + by split=>//=; case.
+      + by move=> ? [h _]; rewrite h.
+    - move=> h.
+      exists (Codisc.ret false); split.
+      + by split=>//= ?; case: h.
+      + by move=> ? [_ h']; rewrite h'//= => ?; case: h.
   Qed.
+
 
   #[global]
   Instance : S ⇾ 𝕀.
   Proof.
     case: sbptd => [s1 [s2 sdisj]].
     unshelve esplit.
-    - move=> s.
-      apply: (iota (covering_map_graph s1 s2 s)).
-      by apply: covering_graph_total.
+    - apply: (funcompr (covering_map_graph s1)).
+      by apply: covering_graph_functional.
     - move=> i; unshelve esplit; move: i.
-      + apply:Codisc.rec; case; [exact: s1 | exact: s2].
-      + apply: Codisc.ind.
-        match goal with
-          [|- ∀ x : 𝟚, iota (@?P x) (@?prf x) = _] =>
-          move=> x;
-          case: (iota_prop (P x) (prf x));
-          move: x
-        end.
-        case.
-        * move=> h1 h2.
-          by rewrite h1 ?Codisc.rec_beta //=.
-        * move=> h1 h2.
-          rewrite h2 ?Codisc.rec_beta //=.
-          by move=> ?; apply: (sdisj).
+      + by apply:Codisc.rec; case; [exact: s1 | exact: s2].
+      + apply: Codisc.ind=> x.
+        rewrite Codisc.rec_beta.
+        apply: funcompr_compute.
+        case: x; by split.
   Qed.
 
   Instance to_orth_𝕀 {I} {X : I → Type} `{[S] ⫫ X} : [𝕀] ⫫ X.

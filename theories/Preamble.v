@@ -42,6 +42,29 @@ Qed.
 
 Opaque extract.
 
+Class Functional {A B} (R : A → B → Prop) :=
+  func : ∀ a, exists! b, R a b.
+
+Definition funcompr {A B} R `{Functional A B R} : A → B.
+Proof.
+  move=> x.
+  apply: (iota (λ y : B, R x y)).
+  case: (func x)=> y hy.
+  by exists y.
+Defined.
+
+Definition funcompr_compute {A B} R `{Functional A B R} : ∀ x y, R x y → funcompr R x = y.
+Proof.
+  move=> x y rxy.
+  case: (func x)=> y' [h1 h2].
+  rewrite -(h2 (funcompr R x)); first by apply: iota_prop.
+  by rewrite -(h2 y).
+Qed.
+
+Opaque funcompr.
+
+
+
 Module Im.
   Section Im.
     Context {X Y : Type} (f : X → Y).
