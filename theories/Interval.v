@@ -1,10 +1,9 @@
-From synrl Require Import Preamble Orthogonality Codiscrete.
+From synrl Require Import Preamble Orthogonality Modality Codiscrete.
 
-Definition 𝕀 := ∇ 𝟚.
+Notation 𝕀 := (∇ 𝟚).
 
 Instance : 𝕀 ⇾ 𝟙.
-Proof. by exists (λ _, Logic.I)=> ?; exists (Codisc.ret true). Qed.
-
+Proof. exists (λ _, Logic.I)=> ?; by exists (Mod.ret true). Qed.
 
 Section BipointedCodiscrete.
 
@@ -19,19 +18,20 @@ Section BipointedCodiscrete.
   Context {S} `{Codiscrete S} `{StrictlyBipointed S} `{CodiscretelyDecidable S}.
 
   Local Definition covering_map_graph (s0 : S) : S → 𝕀 → Prop :=
-    λ s i, (s0 = s → i = Codisc.ret true) ∧ (¬(s0 = s) → i = Codisc.ret false).
+    λ s i, (s0 = s → i = Mod.ret true) ∧ (¬(s0 = s) → i = Mod.ret false).
 
   Local Lemma covering_graph_functional (s0 : S) : Functional (covering_map_graph s0).
   Proof.
     move=> s.
-    generalize (codisc_dcd s s0); apply: CodiscProp.rec; case.
+    generalize (codisc_dcd s s0); apply: ModP.rec.
+    case.
     - move=> ss0.
-      exists (Codisc.ret true); split.
+      exists (Mod.ret true); split.
       + split=>//= h.
         by case: h.
       + by move=> ? [h' _]; rewrite h'.
     - move=> h.
-      exists (Codisc.ret false); split.
+      exists (Mod.ret false); split.
       + split=>//= s0s.
         by case: h.
       + move=> i [h1 h2].
@@ -47,9 +47,9 @@ Section BipointedCodiscrete.
     - apply: (funcompr (covering_map_graph s1)).
       by apply: covering_graph_functional.
     - move=> i; unshelve esplit; move: i.
-      + by apply:Codisc.rec; case; [exact: s1 | exact: s2].
-      + apply: Codisc.ind=> x.
-        rewrite Codisc.rec_beta.
+      + by apply: Mod.rec; case; [exact: s1 | exact: s2].
+      + apply: Mod.ind=> x.
+        rewrite Mod.rec_beta.
         apply: funcompr_compute.
         case: x; split=>//= [].
   Qed.
@@ -60,12 +60,12 @@ Section BipointedCodiscrete.
   Instance from_orth_𝕀 {I} {X : I → Type} `{[𝕀] ⫫ X} : [S] ⫫ X.
   Proof.
     unshelve apply: orth_cover_converse =>//=.
-    - exact: Codisc.ret.
+    - exact: Mod.ret.
     - move=> s.
-      exists (Codisc.rec s).
+      exists (Mod.rec s).
       rewrite /precomp.
       apply: funext=>?.
-      by apply: Codisc.rec_beta.
+      by apply: Mod.rec_beta.
   Qed.
 
 End BipointedCodiscrete.
