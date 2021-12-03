@@ -38,7 +38,7 @@ Admitted.
 Instance Codiscrete_sigma {A B} `{Codiscrete A} `{∀ x : A, Codiscrete (B x)} : Codiscrete {x : A & B x}.
 Admitted.
 
-Instance Codiscrete_pi {A B} `{Codiscrete A} `{∀ x : A, Codiscrete (B x)} : Codiscrete (∀ x : A, B x).
+Instance Codiscrete_pi {A B} `{∀ x : A, Codiscrete (B x)} : Codiscrete (∀ x : A, B x).
 Admitted.
 
 Instance Codiscrete_subset {A} {P : A → Prop} `{Codiscrete A} `{∀ x : A, Codiscrete (P x)} : Codiscrete {x : A | P x}.
