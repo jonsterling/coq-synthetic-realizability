@@ -44,7 +44,12 @@
 </div>
 
 <div class="doc">
-HRR prove that Orth(𝕀) = Orth(S) for any strictly bipointed codiscrete object S. We generalize this result to realizability over a topos other than Set; to do so, we must assume that S is decidable. 
+HRR prove that Orth(𝕀) = Orth(S) for any strictly bipointed
+  codiscrete object S. We generalize this result to realizability over
+  a topos other than Set; to do so, we must assume that S is
+  codiscretely decidable. In fact, a slightly weaker but somewhat
+  unnatural assumption would suffice: that S has a basepoint whose
+  equivalence class is decidable. 
 </div>
 <div class="code">
 
@@ -86,7 +91,7 @@ HRR prove that Orth(𝕀) = Orth(S) for any strictly bipointed codiscrete object
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">apply</span>: <a class="idref" href="synrl.Codiscrete.html#Codisc.ind"><span class="id" title="axiom">Codisc.ind</span></a>=&gt; <span class="id" title="var">x</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <a class="idref" href="synrl.Codiscrete.html#Codisc.rec_beta"><span class="id" title="axiom">Codisc.rec_beta</span></a>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span>: <a class="idref" href="synrl.Preamble.html#funcompr_compute"><span class="id" title="definition">funcompr_compute</span></a>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">case</span>: <span class="id" title="var">x</span>; <span class="id" title="tactic">by</span> <span class="id" title="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">by</span> <span class="id" title="tactic">case</span>: <span class="id" title="var">x</span>; <span class="id" title="tactic">by</span> <span class="id" title="tactic">split</span>.<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
