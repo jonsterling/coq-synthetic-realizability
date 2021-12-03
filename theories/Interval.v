@@ -14,19 +14,27 @@ Section BipointedCodiscrete.
 
   Parameter codisc_dcd : ∀ x y : S, ∇ (x = y ∨ ¬ (x = y)).
 
+  Local Definition covering_map_graph (s1 s2 : S) : S → 𝕀 → Prop :=
+    λ s i, (s = s1 → i = Codisc.ret true) ∧ (¬ (s = s1) → i = Codisc.ret false).
+
+  Local Lemma covering_graph_total (s1 s2 : S) : ¬ (s1 = s2) → ∀ s : S, exists! i : 𝕀, covering_map_graph s1 s2 s i.
+  Proof.
+    move=> disj s.
+    apply: Codisc.rec (codisc_dcd s s1); case.
+    - by move=> ->; exists (Codisc.ret true); split; [by split | move=> i [hi1 hi2]; by rewrite -hi1].
+    - by move=> sns1; exists (Codisc.ret false); split; [by split| move=> i [hi1 hi2]; by rewrite -hi2].
+  Qed.
+
   #[global]
   Instance : S ⇾ 𝕀.
   Proof.
     case: sbptd => [s1 [s2 sdisj]].
     unshelve esplit.
     - move=> s.
-      apply: (iota (λ i, (s = s1 → i = Codisc.ret true) ∧ (¬ (s = s1) → i = Codisc.ret false))).
-      move: (codisc_dcd s s1).
-      apply: Codisc.rec; case.
-      + abstract by [move=> ->; exists (Codisc.ret true); split; [by split | move=> i [hi1 hi2]; by rewrite -hi1]].
-      + abstract by [move=> sns1; exists (Codisc.ret false); split; [by split| move=> i [hi1 hi2]; by rewrite -hi2]].
+      apply: (iota (covering_map_graph s1 s2 s)).
+      by apply: covering_graph_total.
     - move=> i; unshelve esplit; move: i.
-      + exact: (Codisc.rec (λ i, if i then s1 else s2)).
+      + apply:Codisc.rec; case; [exact: s1 | exact: s2].
       + apply: Codisc.ind.
         match goal with
           [|- ∀ x : 𝟚, iota (@?P x) (@?prf x) = _] =>
@@ -39,7 +47,7 @@ Section BipointedCodiscrete.
           by rewrite h1 ?Codisc.rec_beta //=.
         * move=> h1 h2.
           rewrite h2 ?Codisc.rec_beta //=.
-          by move=> ?; apply: sdisj.
+          by move=> ?; apply: (sdisj).
   Qed.
 
   Instance to_orth_𝕀 {I} {X : I → Type} `{[S] ⫫ X} : [𝕀] ⫫ X.

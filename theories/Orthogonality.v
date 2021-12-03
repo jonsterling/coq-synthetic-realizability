@@ -36,10 +36,6 @@ Section Orthogonality.
     ∀ i, is_isomorphism (restrict_fam i).
 End Orthogonality.
 
-(*Definition orthogonal_to {I A A'} (θ : A → A') (X : I → Type) : Prop :=
-  ∀ i, is_isomorphism (restrict_fam θ X i).
-*)
-
 Class OrthogonalTo {I A A'} (θ : A → A') (X : I → Type) :=
   lift : orthogonal_to θ X.
 
