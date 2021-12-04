@@ -64,17 +64,11 @@ Module Quotient.
 
 
     Definition indp (C : T A R → Prop) (h : ∀ x : A, C (intro x)) : ∀ x : T A R, C x.
-    Proof.
-      apply: ind.
-      by [].
-    Defined.
+    Proof. by apply: ind. Qed.
 
     Definition ind_eta (C : T A R → Type) (f1 f2 : ∀ x : T A R, C x) : (∀ x, f1 (intro x) = f2 (intro x)) → f1 = f2.
-    Proof.
-      move=> h.
-      apply: depfunext.
-      by apply: indp.
-    Qed.
+    Proof. by move=>?; apply: depfunext; apply: indp. Qed.
+
 
     Section Effectivity.
       Context `{RelationClasses.Equivalence A R}.
