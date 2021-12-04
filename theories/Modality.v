@@ -29,13 +29,13 @@ Module Mod.
   Class DepModality (P : Type → Prop) :=
     {DepModality_Operator :> ModalOperator P;
      DepModality_RepleteSubuniverse :> RepleteSubuniverse P;
-     sclmod_ump : ∀ {A B} `{∀ x, Modal P (B x)}, @is_isomorphism (∀ x : T A, B x) (∀ x : A, B (unit x)) (λ f a, f (unit a))}.
+     depmod_ump : ∀ {A B} `{∀ x, Modal P (B x)}, @is_isomorphism (∀ x : T A, B x) (∀ x : A, B (unit x)) (λ f a, f (unit a))}.
 
   (** A simple idempotent modality will support a simple elimination rule, and will be closed under product types. *)
   Class SimpleModality (P : Type → Prop) :=
     {SimpleModality_Operator :> ModalOperator P;
      SimpleModality_RepleteSubuniverse :> RepleteSubuniverse P;
-     pclmod_ump : ∀ {A B} `{Modal P B}, @is_isomorphism (T A → B) (A → B) (λ f, f ∘ unit)}.
+     simpmod_ump : ∀ {A B} `{Modal P B}, @is_isomorphism (T A → B) (A → B) (λ f, f ∘ unit)}.
 
   Arguments T P {_}.
 
@@ -43,11 +43,11 @@ Module Mod.
     Context {P} `{DepModality P}.
 
     Definition ind {A} (B : T P A → Type) `{∀ x : T P A, Modal P (B x)} (f : ∀ x : A, B (unit x)) : ∀ x : T P A, B x.
-    Proof. by apply: iso_inv _ sclmod_ump _. Defined.
+    Proof. by apply: iso_inv _ depmod_ump _. Defined.
 
     Lemma ind_beta {A B} `{∀ x : T P A, Modal P (B x)} (f : ∀ x : A, B (unit x)) (a : A) : ind B f (unit a) = f a.
     Proof.
-      case: (sclmod_ump f)=> f' [h1 h2].
+      case: (depmod_ump f)=> f' [h1 h2].
       rewrite -h1.
       move: (unit a).
       apply: equal_f_dep.
@@ -59,7 +59,7 @@ Module Mod.
       unshelve esplit.
       - apply: DepModality_RepleteSubuniverse.
       - move=> A B ?.
-        abstract apply: sclmod_ump.
+        abstract apply: depmod_ump.
     Defined.
   End Dep.
 
@@ -71,11 +71,11 @@ Module Mod.
     Proof. by apply: modal. Qed.
 
     Definition rec {A B} `{Modal P B} (f : A → B) : T P A → B.
-    Proof. by apply: iso_inv _ pclmod_ump _. Defined.
+    Proof. by apply: iso_inv _ simpmod_ump _. Defined.
 
     Lemma rec_beta {A B} `{Modal P B} (f : A → B) (a : A) : rec f (unit a) = f a.
     Proof.
-      case: (pclmod_ump f)=> f' [h1 h2].
+      case: (simpmod_ump f)=> f' [h1 h2].
       rewrite -h1 /comp.
       move: (unit a).
       apply: equal_f.
@@ -91,7 +91,7 @@ Module Mod.
     Lemma alg_eta {A} `{Modal P A} : ∀ x : T P A, x = unit (alg x).
     Proof.
       apply: equal_f.
-      apply: (iso_injective _ pclmod_ump).
+      apply: (iso_injective _ simpmod_ump).
       apply: funext=> x//=.
       by rewrite alg_beta.
     Qed.
@@ -139,7 +139,7 @@ Section SimpleInstances.
     exists I; split.
     - move: x.
       apply: equal_f.
-      apply: (iso_injective _ Mod.pclmod_ump).
+      apply: (iso_injective _ Mod.simpmod_ump).
       by apply: funext; case.
     - by case.
   Qed.
@@ -160,7 +160,7 @@ Section SimpleInstances.
     - split.
       + move: p.
         apply: equal_f.
-        apply: (iso_injective _ Mod.pclmod_ump).
+        apply: (iso_injective _ Mod.simpmod_ump).
         apply: funext=> x//=.
         congr Mod.unit.
         rewrite ?Mod.rec_beta ?Mod.alg_beta.
@@ -192,7 +192,7 @@ Section SimpleInstances.
     - split.
       + move: f.
         apply: equal_f.
-        apply: (iso_injective _ Mod.pclmod_ump).
+        apply: (iso_injective _ Mod.simpmod_ump).
         apply: funext=> f//=.
         congr Mod.unit.
         apply: funext=> x.
@@ -208,9 +208,9 @@ Section SimpleInstances.
     apply: equal_f.
     move: x.
     apply: equal_f.
-    apply: (iso_injective _ Mod.pclmod_ump).
+    apply: (iso_injective _ Mod.simpmod_ump).
     apply: funext=> x//=.
-    apply: (iso_injective _ Mod.pclmod_ump).
+    apply: (iso_injective _ Mod.simpmod_ump).
     apply: funext=> y //=.
     congr Mod.unit.
     apply: irr.
@@ -222,7 +222,7 @@ Section SimpleInstances.
     unshelve esplit.
     - move: e.
       apply: equal_f.
-      apply: (iso_injective _ Mod.pclmod_ump).
+      apply: (iso_injective _ Mod.simpmod_ump).
       by apply: funext=>//=.
     - split=>//=.
       apply: irr.
@@ -249,7 +249,7 @@ Section DepInstances.
     - split.
       + move: f.
         apply: equal_f_dep.
-        apply: (iso_injective _ Mod.pclmod_ump).
+        apply: (iso_injective _ Mod.simpmod_ump).
         rewrite /comp //=.
         apply: funext=> ?; f_equal.
         apply: depfunext=> x.
@@ -277,7 +277,7 @@ Section DepInstances.
       - split=>//=.
         + move: p.
           apply: equal_f_dep.
-          apply: (iso_injective _ Mod.pclmod_ump).
+          apply: (iso_injective _ Mod.simpmod_ump).
           apply: funext; case=> a b //=.
           congr Mod.unit.
           apply: eq_sigT=>//=.
