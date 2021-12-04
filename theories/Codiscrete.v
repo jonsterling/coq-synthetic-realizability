@@ -30,7 +30,18 @@ Class Uniform (A : Type) :=
 
 Definition is_assembly (A : Type) := ∀ x y : A, codiscrete (x = y).
 
-Declare Instance assemblies_replete : RepleteSubuniverse is_assembly.
+Instance assemblies_replete : RepleteSubuniverse is_assembly.
+Proof.
+  move=> A B f iso asmA x y.
+  pose g := iso_inv f iso.
+  apply: (replete (g x = g y) (x = y)).
+  - by apply/iso_injective/iso_inv_iso.
+  - move=> ? h.
+    unshelve esplit=>//.
+    by rewrite h.
+  - by apply: asmA.
+Qed.
+
 Declare Instance assemblies_DepModality : Mod.DepModality is_assembly.
 
 Notation Asm := (Mod.T is_assembly).
