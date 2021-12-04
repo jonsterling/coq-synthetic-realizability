@@ -1,4 +1,4 @@
-From synrl Require Import Preamble Modality Orthogonality.
+From synrl Require Import Preamble Modality Orthogonality Coequalizer.
 
 Export Modality.
 
@@ -42,12 +42,57 @@ Proof.
   - by apply: asmA.
 Qed.
 
-Declare Instance assemblies_DepModality : Mod.DepModality is_assembly.
+Definition codiscretely_eq (A : Type) (x y : A) : Prop :=
+  ∇-p (x = y).
 
-Notation Asm := (Mod.T is_assembly).
+Instance Equivalence_codiscretely_eq {A} : RelationClasses.Equivalence (codiscretely_eq A).
+Proof.
+  split.
+  - by move=> ?; apply: ModP.unit.
+  - move=> u v.
+    apply: ModP.rec=>->.
+    by apply: ModP.unit.
+  - move=> u v w.
+    by apply: ModP.rec=>->.
+Qed.
 
 Notation IsAssembly := (Modal is_assembly).
 
+Definition Asm_T (A : Type) := Quotient.T A (codiscretely_eq A).
+
+Instance IsAssembly_Asm_T {A} : IsAssembly (Asm_T A).
+Proof.
+  apply: Quotient.indp=> x.
+  apply: Quotient.indp=> y.
+  apply: (replete _ _ Quotient.glue).
+  - by apply: Quotient.glue_is_iso.
+  - by apply: ModP.Modal_T.
+Qed.
+
+Instance assemblies_ModalOperator : Mod.ModalOperator is_assembly.
+Proof.
+  unshelve esplit.
+  - by apply: Asm_T.
+  - by move=>?; apply: IsAssembly_Asm_T.
+  - by move=>?; apply: Quotient.intro.
+Defined.
+
+Instance assemblies_DepModality : Mod.DepModality is_assembly.
+Proof.
+  unshelve esplit.
+  - typeclasses eauto.
+  - move=> A B H f.
+    unshelve esplit.
+    + unshelve apply: Quotient.ind.
+      * apply: f.
+      * move=> x y.
+        apply: ModP.ind.
+        -- by move=> ?; apply: H.
+        -- by move=> ?; simplify_eqs.
+    + split=>//=.
+      move=> h <-.
+      by apply: depfunext; apply: Quotient.indp.
+Defined.
 
 Instance Codiscrete_EqOfAssembly A `{IsAssembly A} {x y : A} : Codiscrete (x = y).
 Proof. by apply: (mod x y). Qed.

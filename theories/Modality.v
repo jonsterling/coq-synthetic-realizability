@@ -303,6 +303,20 @@ Module ModP.
   Section Dep.
     Context {P} `{Mod.DepModality P}.
 
+    Global Instance Modal_T {A} : Modal P (T P A).
+    Proof.
+      apply: Mod.unit_iso_to_modal=> p.
+      unshelve esplit.
+      - apply: PropTrunc.unit.
+        move: p.
+        apply: Mod.rec.
+        apply: (@PropTrunc.rec (Mod.T P A) (Mod.T P A) _ id).
+      - split=>//=.
+        apply: irr.
+        apply: (@IsProp_T _ _ (T P A)).
+    Qed.
+
+
     Definition ind {A} (B : T P A → Type) `{∀ x : T P A, Modal P (B x)} (f : ∀ x : A, B (unit x)) : ∀ x : T P A, B x.
     Proof.
       move=> a.

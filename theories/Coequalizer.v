@@ -60,5 +60,51 @@ Module Quotient.
       apply: (Coeq.ind C h); case; case=> x y xy.
       abstract by rewrite /pi1 /pi2 //= -(H x y xy); congr eq_rect.
     Defined.
+
+
+
+    Definition indp (C : T A R → Prop) (h : ∀ x : A, C (intro x)) : ∀ x : T A R, C x.
+    Proof.
+      apply: ind.
+      by [].
+    Defined.
+
+    Definition ind_eta (C : T A R → Type) (f1 f2 : ∀ x : T A R, C x) : (∀ x, f1 (intro x) = f2 (intro x)) → f1 = f2.
+    Proof.
+      move=> h.
+      apply: depfunext.
+      by apply: indp.
+    Qed.
+
+    Section Effectivity.
+      Context `{RelationClasses.Equivalence A R}.
+
+      Local Definition R' : T A R → A → Prop.
+      Proof.
+        apply: (rec R)=> x y xy.
+        apply: funext=> z.
+        apply: propext; split.
+        - move=> ?.
+          transitivity x=>//.
+          by symmetry.
+        - move=> ?.
+          by transitivity y=>//.
+      Defined.
+
+      Definition eff {x y : A} : intro x = intro y → R x y.
+      Proof.
+        move=> h.
+        symmetry.
+        rewrite (_ : R y x = R x x); last by reflexivity.
+        by move: (f_equal R' h) => //= ->.
+      Qed.
+
+      Definition glue_is_iso {x y : A} : is_isomorphism (@glue x y).
+      Proof.
+        move=> e.
+        unshelve esplit=>//.
+        by apply: eff.
+      Qed.
+    End Effectivity.
   End Operations.
 End Quotient.

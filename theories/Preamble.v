@@ -190,6 +190,9 @@ Module PropTrunc.
     apply/unit/f.
   Defined.
 
+  Definition rec {A : Type} {B : Type} `{IsProp B} : (A → B) → T A → B.
+  Proof. by apply: ind. Defined.
+
 End PropTrunc.
 
 
