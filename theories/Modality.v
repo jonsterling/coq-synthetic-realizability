@@ -25,11 +25,13 @@ Module Mod.
      modal : ∀ {A}, P (T A);
      unit : ∀ {A}, A → T A}.
 
+  (** A dependent idempotent modality will support a dependent elimination rule, and will be closed under sigma types. *)
   Class DepModality (P : Type → Prop) :=
     {DepModality_Operator :> ModalOperator P;
      DepModality_RepleteSubuniverse :> RepleteSubuniverse P;
      sclmod_ump : ∀ {A B} `{∀ x, Modal P (B x)}, @is_isomorphism (∀ x : T A, B x) (∀ x : A, B (unit x)) (λ f a, f (unit a))}.
 
+  (** A simple idempotent modality will support a simple elimination rule, and will be closed under product types. *)
   Class SimpleModality (P : Type → Prop) :=
     {SimpleModality_Operator :> ModalOperator P;
      SimpleModality_RepleteSubuniverse :> RepleteSubuniverse P;
