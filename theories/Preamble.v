@@ -154,3 +154,42 @@ Qed.
 
 Lemma iso_surjective {A B} (f : A → B) : is_isomorphism f → surjective f.
 Proof. by move=> iso b; case: (iso b) => a [? _]; exists a. Qed.
+
+
+
+
+Class IsProp (A : Type) :=
+  irr : ∀ x y : A, x = y.
+
+
+Module PropTrunc.
+
+  Definition T (A : Type) : Prop := ∃ x : A, True.
+
+  Definition unit {A} : A → T A.
+  Proof. by move=> x; exists x. Defined.
+
+  Global Instance IsProp_Props (A : Prop) : IsProp A.
+  Proof. by []. Qed.
+
+  Definition alg {A} `{IsProp A} : T A → A.
+  Proof.
+    move=> u.
+    apply: (iota (λ x : A, True)).
+    case: u=> a _.
+      by exists a.
+  Qed.
+
+  Lemma alg_beta {A} `{IsProp A} : ∀ x, alg (unit x) = x.
+  Proof. by []. Qed.
+
+  Lemma alg_eta {A} `{IsProp A} : ∀ x, unit (alg x) = x.
+  Proof. by []. Qed.
+
+  Definition ind {A : Type} {B : T A → Type} `{∀ x : T A, IsProp (B x)} : (∀ x : A, B (unit x)) → ∀ x : T A, B x.
+  Proof.
+    move=> f x; apply: alg; case: x=> x [].
+    apply/unit/f.
+  Defined.
+
+End PropTrunc.

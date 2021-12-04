@@ -4,17 +4,15 @@ Export Modality.
 
 Axiom codiscrete : Type → Prop.
 
-Declare Instance codiscrete_sigma_clsed : SigmaClosedSubuniverse codiscrete.
+Declare Instance codiscrete_replete : RepleteSubuniverse codiscrete.
 Declare Instance codiscrete_lex : LexSubuniverse codiscrete.
 Declare Instance codiscrete_dense : DenseSubuniverse codiscrete.
 Declare Instance codiscrete_regular : RegularSubuniverse codiscrete.
+Declare Instance codiscrete_DepModality : Mod.DepModality codiscrete.
 
 Notation Codiscrete := (Modal codiscrete).
 Notation "∇ A" := (Mod.T codiscrete A) (at level 60).
 Notation "∇-p P" := (ModP.T codiscrete (P <: Prop)) (at level 60).
-
-Instance Codisc_not {P} : Codiscrete (¬ P).
-Proof. by rewrite /not; typeclasses eauto. Qed.
 
 Definition codisc_or (P Q : Prop) `{Codiscrete P} `{Codiscrete Q} := ∇-p (P ∨ Q).
 

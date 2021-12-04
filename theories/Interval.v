@@ -3,7 +3,7 @@ From synrl Require Import Preamble Orthogonality Modality Codiscrete.
 Notation 𝕀 := (∇ 𝟚).
 
 Instance : 𝕀 ⇾ 𝟙.
-Proof. exists (λ _, Logic.I)=> ?; by exists (Mod.ret true). Qed.
+Proof. exists (λ _, Logic.I)=> ?; by exists (Mod.unit true). Qed.
 
 Section BipointedCodiscrete.
 
@@ -18,7 +18,7 @@ Section BipointedCodiscrete.
   Context {S} `{Codiscrete S} `{StrictlyBipointed S} `{CodiscretelyDecidable S}.
 
   Local Definition covering_map_graph (s0 : S) : S → 𝕀 → Prop :=
-    λ s i, (s0 = s → i = Mod.ret true) ∧ (¬(s0 = s) → i = Mod.ret false).
+    λ s i, (s0 = s → i = Mod.unit true) ∧ (¬(s0 = s) → i = Mod.unit false).
 
   Local Lemma covering_graph_functional (s0 : S) : Functional (covering_map_graph s0).
   Proof.
@@ -26,12 +26,12 @@ Section BipointedCodiscrete.
     generalize (codisc_dcd s s0); apply: ModP.rec.
     case.
     - move=> ss0.
-      exists (Mod.ret true); split.
+      exists (Mod.unit true); split.
       + split=>//= h.
         by case: h.
       + by move=> ? [h' _]; rewrite h'.
     - move=> h.
-      exists (Mod.ret false); split.
+      exists (Mod.unit false); split.
       + split=>//= s0s.
         by case: h.
       + move=> i [h1 h2].
@@ -60,7 +60,7 @@ Section BipointedCodiscrete.
   Instance from_orth_𝕀 {I} {X : I → Type} `{[𝕀] ⫫ X} : [S] ⫫ X.
   Proof.
     unshelve apply: orth_cover_converse =>//=.
-    - exact: Mod.ret.
+    - exact: Mod.unit.
     - move=> s.
       exists (Mod.rec s).
       rewrite /precomp.
