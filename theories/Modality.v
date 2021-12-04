@@ -1,41 +1,10 @@
 From synrl Require Import Preamble.
 
-Definition iso_inv {A B} (f : A → B) : is_isomorphism f → B → A.
-Proof.
-  move=> iso.
-  apply: (funcompr (λ b a, f a = b)).
-  apply: iso.
-Defined.
-
-Lemma iso_inv_beta {A B} (f : A → B) (h : is_isomorphism f) : ∀ x, f (iso_inv f h x) = x.
-Proof.
-  move=> b.
-  rewrite /iso_inv.
-  case: (h b)=> a [h1a h2a].
-  by rewrite (funcompr_compute (λ b a, f a = b) b a).
-Qed.
-
-Lemma iso_inv_iso {A B} (f : A → B) (h : is_isomorphism f) : is_isomorphism (iso_inv f h).
-Proof.
-  move=> a.
-  exists (f a).
-  split.
-  - rewrite /iso_inv.
-    by apply: funcompr_compute.
-  - move=> b h'.
-    rewrite -h'.
-    rewrite /iso_inv.
-    by rewrite (funcompr_compute _ b a)  -h' iso_inv_beta.
-Qed.
-
 Class Modal (P : Type → Prop) (A : Type) : Prop :=
   mod : P A.
 
-Definition const {B A} : B → A → B :=
-  λ b _, b.
-
 Definition connected (P : Type → Prop) (A : Type) : Prop :=
-  ∀ B `{Modal P B}, @is_isomorphism B (A → B) const.
+  ∀ B, Modal P B → @is_isomorphism B (A → B) const.
 
 
 Class RepleteSubuniverse (P : Type → Prop) :=
@@ -157,6 +126,7 @@ Section Instances.
 End Instances.
 
 
+
 Section SimpleInstances.
   Context {P} `{Mod.SimpleModality P}.
 
@@ -172,9 +142,6 @@ Section SimpleInstances.
     - by case.
   Qed.
 
-  (* TODO *)
-  Global Instance Modal_eq {A} {x y : A} `{Modal P A} : Modal P (x = y).
-  Admitted.
 
 
   Global Instance Modal_prod {A B} `{Modal P A} `{Modal P B} : Modal P (A * B).
@@ -233,23 +200,35 @@ Section SimpleInstances.
         by rewrite Mod.rec_beta.
   Qed.
 
+  Global Instance IsProp_T {A} `{IsProp A} : IsProp (Mod.T P A).
+  Proof.
+    move=> x.
+    apply: equal_f.
+    move: x.
+    apply: equal_f.
+    apply: (iso_injective _ Mod.pclmod_ump).
+    apply: funext=> x//=.
+    apply: (iso_injective _ Mod.pclmod_ump).
+    apply: funext=> y //=.
+    congr Mod.unit.
+    apply: irr.
+  Qed.
+
+  Global Instance Modal_eq {A} {x y : A} `{Modal P A} : Modal P (x = y).
+  Proof.
+    apply: Mod.unit_iso_to_modal=> e.
+    unshelve esplit.
+    - move: e.
+      apply: equal_f.
+      apply: (iso_injective _ Mod.pclmod_ump).
+      by apply: funext=>//=.
+    - split=>//=.
+      apply: irr.
+  Qed.
+
   Global Instance Modal_not {A} `{DenseSubuniverse P} : Modal P (not A).
   Proof. by rewrite /not; typeclasses eauto. Qed.
 End SimpleInstances.
-
-Global Instance IsProp_T {P} `{Mod.SimpleModality P} {A} `{IsProp A} : IsProp (Mod.T P A).
-Proof.
-  move=> x.
-  apply: equal_f.
-  move: x.
-  apply: equal_f.
-  apply: (iso_injective _ Mod.pclmod_ump).
-  apply: funext=> x//=.
-  apply: (iso_injective _ Mod.pclmod_ump).
-  apply: funext=> y //=.
-  congr Mod.unit.
-  by [].
-Qed.
 
 Section DepInstances.
   Context {P} `{Mod.DepModality P}.

@@ -95,7 +95,6 @@ Notation proofirr := proof_irrelevance.
 
 #[global]
 Hint Resolve proofirr : core.
-
 Infix "∘" := comp (right associativity, at level 60).
 Notation "𝟙" := True.
 Notation "𝟚" := bool.
@@ -159,11 +158,10 @@ Proof. by move=> iso b; case: (iso b) => a [? _]; exists a. Qed.
 
 
 Class IsProp (A : Type) :=
-  irr : ∀ x y : A, x = y.
+  irr : ∀ {x y : A}, x = y.
 
 
 Module PropTrunc.
-
   Definition T (A : Type) : Prop := ∃ x : A, True.
 
   Definition unit {A} : A → T A.
@@ -177,14 +175,14 @@ Module PropTrunc.
     move=> u.
     apply: (iota (λ x : A, True)).
     case: u=> a _.
-      by exists a.
+    exists a; split=>//.
   Qed.
 
   Lemma alg_beta {A} `{IsProp A} : ∀ x, alg (unit x) = x.
-  Proof. by []. Qed.
+  Proof. by move=>?; apply: irr. Qed.
 
   Lemma alg_eta {A} `{IsProp A} : ∀ x, unit (alg x) = x.
-  Proof. by []. Qed.
+  Proof. move=>?; apply: irr. Qed.
 
   Definition ind {A : Type} {B : T A → Type} `{∀ x : T A, IsProp (B x)} : (∀ x : A, B (unit x)) → ∀ x : T A, B x.
   Proof.
@@ -193,3 +191,37 @@ Module PropTrunc.
   Defined.
 
 End PropTrunc.
+
+
+
+
+Definition iso_inv {A B} (f : A → B) : is_isomorphism f → B → A.
+Proof.
+  move=> iso.
+  apply: (funcompr (λ b a, f a = b)).
+  apply: iso.
+Defined.
+
+Lemma iso_inv_beta {A B} (f : A → B) (h : is_isomorphism f) : ∀ x, f (iso_inv f h x) = x.
+Proof.
+  move=> b.
+  rewrite /iso_inv.
+  case: (h b)=> a [h1a h2a].
+  by rewrite (funcompr_compute (λ b a, f a = b) b a).
+Qed.
+
+Lemma iso_inv_iso {A B} (f : A → B) (h : is_isomorphism f) : is_isomorphism (iso_inv f h).
+Proof.
+  move=> a.
+  exists (f a).
+  split.
+  - rewrite /iso_inv.
+    by apply: funcompr_compute.
+  - move=> b h'.
+    rewrite -h'.
+    rewrite /iso_inv.
+    by rewrite (funcompr_compute _ b a)  -h' iso_inv_beta.
+Qed.
+
+Definition const {B A} : B → A → B :=
+  λ b _, b.
