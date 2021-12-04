@@ -4,6 +4,7 @@
 -arg all
 
 theories/Preamble.v
+theories/Coequalizer.v
 theories/Modality.v
 theories/Orthogonality.v
 theories/Codiscrete.v
