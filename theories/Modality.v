@@ -10,7 +10,7 @@ Definition connected (P : Type → Prop) (A : Type) : Prop :=
 Class RepleteSubuniverse (P : Type → Prop) :=
   replete : ∀ A B (f : A → B), is_isomorphism f → P A → P B.
 
-Class LexSubuniverse P `{RepleteSubuniverse P} : Prop :=
+Class LexSubuniverse P : Prop :=
   {connected_eq : ∀ A, connected P A → ∀ x y : A, connected P (x = y)}.
 
 Class DenseSubuniverse (P : Type → Prop) : Prop :=
