@@ -31,7 +31,7 @@ Class Uniform (A : Type) :=
 Definition is_assembly (A : Type) := ∀ x y : A, codiscrete (x = y).
 
 Declare Instance assemblies_replete : RepleteSubuniverse is_assembly.
-Declare Instance assemblies_SimpleModality : Mod.SimpleModality is_assembly.
+Declare Instance assemblies_DepModality : Mod.DepModality is_assembly.
 
 Notation Asm := (Mod.T is_assembly).
 
