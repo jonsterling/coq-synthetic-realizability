@@ -26,3 +26,17 @@ Definition uniform (A : Type) : Prop :=
 
 Class Uniform (A : Type) :=
   unif : uniform A.
+
+
+Definition is_assembly (A : Type) := ∀ x y : A, codiscrete (x = y).
+
+Declare Instance assemblies_replete : RepleteSubuniverse is_assembly.
+Declare Instance assemblies_SimpleModality : Mod.SimpleModality is_assembly.
+
+Notation Asm := (Mod.T is_assembly).
+
+Notation IsAssembly := (Modal is_assembly).
+
+
+Instance Codiscrete_EqOfAssembly A `{IsAssembly A} {x y : A} : Codiscrete (x = y).
+Proof. by apply: (mod x y). Qed.
