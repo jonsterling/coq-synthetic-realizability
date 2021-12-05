@@ -1,4 +1,6 @@
-From synrl Require Import Preamble.
+From synrl Require Import Preamble Coequalizer.
+
+Set Primitive Projections.
 
 Class Modal (P : Type → Prop) (A : Type) : Prop :=
   mod : P A.
@@ -9,6 +11,8 @@ Definition connected (P : Type → Prop) (A : Type) : Prop :=
 
 Class RepleteSubuniverse (P : Type → Prop) :=
   replete : ∀ A B (f : A → B), is_isomorphism f → P A → P B.
+
+Arguments replete P {_} A [B] f iso : rename.
 
 Class LexSubuniverse P : Prop :=
   {connected_eq : ∀ A, connected P A → ∀ x y : A, connected P (x = y)}.
@@ -54,7 +58,7 @@ Module Mod.
       by apply: funcompr_compute.
     Qed.
 
-    Global Instance : SimpleModality P.
+    Global Instance Dep_to_Simple : SimpleModality P.
     Proof.
       unshelve esplit.
       - apply: DepModality_RepleteSubuniverse.
@@ -82,6 +86,8 @@ Module Mod.
       by apply: funcompr_compute.
     Qed.
 
+    Opaque rec.
+
     Definition alg {A} `{Modal P A} : T P A → A.
     Proof. by apply: rec. Defined.
 
@@ -96,6 +102,8 @@ Module Mod.
       by rewrite alg_beta.
     Qed.
 
+    Opaque alg.
+
     Lemma alg_iso {A} `{Modal P A} : @is_isomorphism (T P A) A alg.
     Proof.
       move=> x.
@@ -109,9 +117,9 @@ Module Mod.
     Proof.
       move=> iso.
       rewrite /Modal.
-      apply: (replete (T P A) A (iso_inv _ iso)).
-      apply: iso_inv_iso.
-      apply: modal.
+      apply: (replete P _ (iso_inv _ iso)).
+      - apply: iso_inv_iso.
+      - apply: modal.
     Qed.
   End Simple.
 End Mod.
@@ -172,7 +180,7 @@ Section SimpleInstances.
   Global Instance Modal_and {A B : Prop} `{Modal P A} `{Modal P B} : Modal P (A ∧ B).
   Proof.
     rewrite /Modal.
-    apply: (replete (A * B) (A ∧ B)).
+    apply: (replete P (A * B)).
     - by move=> p; split; move: p; [apply: fst | apply: snd].
     - move=> ? p.
       unshelve esplit=>//.
@@ -236,7 +244,7 @@ Section DepInstances.
   Context {P} `{Mod.DepModality P}.
 
   Global Instance Modal_T {A} : Modal P (Mod.T P A).
-  Proof. by apply: Mod.modal. Qed.
+  Proof. by apply: Mod.modal. Defined.
 
   Global Instance Modal_pi {A B} `{∀ x : A, Modal P (B x)} : Modal P (∀ x : A, B x).
   Proof.
@@ -303,20 +311,6 @@ Module ModP.
   Section Dep.
     Context {P} `{Mod.DepModality P}.
 
-    Global Instance Modal_T {A} : Modal P (T P A).
-    Proof.
-      apply: Mod.unit_iso_to_modal=> p.
-      unshelve esplit.
-      - apply: PropTrunc.unit.
-        move: p.
-        apply: Mod.rec.
-        apply: (@PropTrunc.rec (Mod.T P A) (Mod.T P A) _ id).
-      - split=>//=.
-        apply: irr.
-        apply: (@IsProp_T _ _ (T P A)).
-    Qed.
-
-
     Definition ind {A} (B : T P A → Type) `{∀ x : T P A, Modal P (B x)} (f : ∀ x : A, B (unit x)) : ∀ x : T P A, B x.
     Proof.
       move=> a.
@@ -331,10 +325,25 @@ Module ModP.
       rewrite /ind /unit; simplify_eqs.
       by rewrite PropTrunc.alg_beta Mod.ind_beta.
     Qed.
+
+    Opaque ind.
   End Dep.
 
   Section Simple.
     Context {P} `{Mod.SimpleModality P}.
+
+
+    Global Instance Modal_T {A} : Modal P (T P A).
+    Proof.
+      apply: Mod.unit_iso_to_modal=> p.
+      unshelve esplit.
+      - apply: PropTrunc.unit.
+        move: p.
+        apply: Mod.rec.
+        apply: (@PropTrunc.rec (Mod.T P A) (Mod.T P A) _ id).
+      - split=>//=.
+        apply: irr.
+    Qed.
 
     Definition rec {A : Prop} {B} `{Modal P B} (f : A → B) : T P A → B.
     Proof.
@@ -344,5 +353,70 @@ Module ModP.
 
     Lemma rec_beta {A : Prop} {B} `{Modal P B} (f : A → B) (a : A) : rec f (unit a) = f a.
     Proof. by rewrite /rec /unit PropTrunc.alg_beta Mod.rec_beta. Qed.
+
+    Opaque rec.
   End Simple.
 End ModP.
+
+
+
+Section SeparatedReflection.
+  Context P `{Mod.SimpleModality P}.
+
+  Definition separated (P : Type → Prop) : Type → Prop :=
+    λ A, ∀ x y : A, P (x = y).
+
+  Instance separated_replete : RepleteSubuniverse (separated P).
+  Proof.
+    move=> A B f iso sepA x y.
+    pose g := iso_inv f iso.
+    apply: (replete P (g x = g y)).
+    - by apply/iso_injective/iso_inv_iso.
+    - move=> ? h.
+      unshelve esplit=>//.
+      by rewrite h.
+    - by apply: sepA.
+  Qed.
+
+  Definition modally_eq (A : Type) (x y : A) : Prop :=
+    ModP.T P (x = y).
+
+  Global Instance Reflexive_modally_eq {A} : RelationClasses.Reflexive (modally_eq A).
+  Proof. by move=>?; apply: ModP.unit. Qed.
+
+  Global Instance Symmetric_modally_eq {A} : RelationClasses.Symmetric (modally_eq A).
+  Proof. by move=>??; apply: ModP.rec=>->; apply: ModP.unit. Qed.
+
+  Global Instance Transitive_modally_eq {A} : RelationClasses.Transitive (modally_eq A).
+  Proof. by move=> ???; apply: ModP.rec=>->. Qed.
+
+  Global Instance Equivalence_modally_eq {A} : RelationClasses.Equivalence (modally_eq A).
+  Proof. by split; typeclasses eauto. Qed.
+
+  Definition Sep A := Quotient.T A (modally_eq A).
+
+  Notation Separated := (Modal (separated P)).
+
+  Global Instance Separated_Sep {A} : Separated (Sep A).
+  Proof.
+    apply: Quotient.indp=> x.
+    apply: Quotient.indp=> y.
+    apply: (replete P _ Quotient.glue).
+    - by apply: Quotient.glue_is_iso.
+    - by apply: ModP.Modal_T.
+  Qed.
+
+  Global Instance separated_ModalOperator : Mod.ModalOperator (separated P).
+  Proof.
+    unshelve esplit.
+    - by apply: Sep.
+    - by move=>?; apply: Separated_Sep.
+    - by move=>?; apply: Quotient.intro.
+  Defined.
+
+  Global Instance Modal_EqOfSeparated {A} `{Separated A} {x y : A} : Modal P (x = y).
+  Proof. by apply: (mod x y). Qed.
+
+End SeparatedReflection.
+
+Notation Separated := (λ P, Modal (separated P)).
