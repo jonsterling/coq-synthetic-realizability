@@ -2,7 +2,8 @@ From synrl Require Import Preamble.
 
 Scheme eq_ind := Induction for eq Sort Type.
 
-Definition is_contr (A : Type) := exists x : A, forall y : A, x = y.
+Lemma rew_partial {A} {ϕ : Prop} (f : ϕ → A) : forall (ψ : Prop) (H : ϕ = ψ) (x : _), (rew [fun z : Prop => z -> A] H in f) x = f (rew <- H in x).
+Proof. by apply: eq_ind. Qed.
 
 Module Ext.
   Definition L (A : Type) := {ϕ : Prop & ϕ -> A}.
@@ -46,8 +47,6 @@ Module Ext.
       apply: (snd z).
   Defined.
 
-  Lemma rew_partial {A} {ϕ : Prop} (f : ϕ → A) : forall (ψ : Prop) (H : ϕ = ψ) (x : _), (rew [fun z : Prop => z -> A] H in f) x = f (rew <- H in x).
-  Proof. by apply: eq_ind. Qed.
 
 
   Lemma extend_restricts (ϕ : Prop) (X : ϕ → U) : forall z : ϕ, extend ϕ X = X z.
