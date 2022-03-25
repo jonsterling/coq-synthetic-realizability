@@ -1,80 +1,102 @@
-From synrl Require Import Preamble Coequalizer.
-
-Set Cumulative StrictProp.
+From synrl Require Import Preamble.
 
 Scheme eq_ind := Induction for eq Sort Type.
 
-Set Primitive Projections.
-Record strue : SProp := {}.
-Record sand (A B : SProp) : SProp := { sfst : A; ssnd : B }.
+Definition is_contr (A : Type) := exists x : A, forall y : A, x = y.
 
-Arguments sfst [A] [B].
-Arguments ssnd [A] [B].
+Module Ext.
+  Definition L (A : Type) := {ϕ : Prop & ϕ -> A}.
+  Definition U := L Type.
 
-Definition L (A : Type) := {ϕ : SProp & ϕ -> A}.
-Definition U := L Type.
-Definition el (X : U) : Type :=
-  forall z : projT1 X, projT2 X z.
+  Definition prop : U → Prop.
+  Proof. apply: projT1. Defined.
 
-Definition inU : Type -> U.
-Proof.
-  move=> A.
-  exists strue=> _.
-  apply: A.
-Defined.
+  Definition part : forall A : U, prop A -> Type.
+  Proof. apply: projT2. Defined.
+
+  Definition el (X : U) : Type :=
+    forall z : prop X, part X z.
 
 
-Definition extend (ϕ : SProp) (X : ϕ -> U) : U.
-Proof.
-  unshelve esplit.
-  + refine (sand ϕ (∀ z : ϕ, projT1 (X z))).
-  + move=> z.
-    Check projT2 (X (sfst z)).
-    apply: (projT2 (X (sfst z))).
-    apply: (ssnd z).
-Defined.
-
-Axiom spropext : forall (ϕ ψ : SProp), (ϕ -> ψ) -> (ψ -> ϕ) → ϕ = ψ.
-Axiom sdepfunext : forall (ϕ : SProp) (A : ϕ → Type) (u v : ∀ z, A z) (h : forall z, u z = v z), u = v.
-Axiom sorry : forall P : Prop, P.
-
-
-Lemma rew_partial {A} {ϕ : SProp} (f : ϕ → A) : forall (ψ : SProp) (H : ϕ = ψ) (x : _), (rew [fun z : SProp => z -> A] H in f) x = f (rew <- H in x).
-Proof. by apply: eq_ind. Qed.
-
-Lemma extend_restricts (ϕ : SProp) (X : ϕ → U) : forall z : ϕ, extend ϕ X = X z.
-Proof.
-  move=> z.
-  apply: eq_sigT=>//=.
-  - apply: spropext.
-    + case=> h1; apply.
-    + move=> h; split=>//.
-  - move=> H.
-    apply: sdepfunext=> z'.
-    apply: rew_partial.
-Qed.
-
-Section iso.
-  Context (ϕ : SProp) (X : ϕ → U).
-
-  Definition fwd : (forall z, el (X z)) -> el (extend ϕ X).
+  Definition inU : Type -> U.
   Proof.
-    move=> x z.
-    apply: x.
+    move=> A.
+    exists True => _.
+    apply: A.
   Defined.
 
-  Definition bwd (x : el (extend ϕ X)) : (∀ z, el (X z)).
-  Proof. by refine (fun z z' => x (Build_sand _ _ _ _ )). Defined.
 
-  Lemma fwd_bwd : ∀ u, fwd (bwd u) = u.
+  Definition extend (ϕ : Prop) (X : ϕ -> U) : U.
+  Proof.
+    unshelve esplit.
+    + refine (ϕ /\ (forall z : ϕ, prop (X z))).
+    + move=> z.
+      apply: (part (X (fst z))).
+      apply: (snd z).
+  Defined.
+
+  Lemma rew_partial {A} {ϕ : Prop} (f : ϕ → A) : forall (ψ : Prop) (H : ϕ = ψ) (x : _), (rew [fun z : Prop => z -> A] H in f) x = f (rew <- H in x).
+  Proof. by apply: eq_ind. Qed.
+
+
+  Lemma extend_restricts (ϕ : Prop) (X : ϕ → U) : forall z : ϕ, extend ϕ X = X z.
   Proof.
     move=> u.
-    by apply: sdepfunext.
+    apply: eq_sigT=>//=.
+    - apply: propext; split.
+      + by case=>?; apply.
+      + move=> h; split=>//.
+        move=> v.
+        rewrite (_ : v = u) //=.
+    - move=> H.
+      apply: depfunext=> v.
+      rewrite rew_partial //=.
+      move: (proj1 (rew <- [fun ψ : Prop => ψ] H in v))=> w.
+      move: (proj2 (rew <- [fun ψ : Prop => ψ] H in v) w)=> x.
+      move: v x.
+      rewrite (_ : w = u) {w} //=.
+      move=> ??.
+      by congr (projT2 (X u)).
   Qed.
 
-  Lemma bwd_fwd : forall u, bwd (fwd u) = u.
-  Proof.
-    move=> u.
-    by apply: sdepfunext=> z.
-  Qed.
-End iso.
+
+  Section iso.
+    Context (ϕ : Prop) (X : ϕ → U).
+
+    Definition fwd : (forall z, el (X z)) -> el (extend ϕ X).
+    Proof.
+      move=> x z.
+      apply: x.
+    Defined.
+
+    Definition bwd (x : el (extend ϕ X)) : (∀ z, el (X z)).
+    Proof.
+      move=> u v.
+      unfold extend, el in *; simpl in *.
+      suff w: ϕ ∧ (∀ z : ϕ, prop (X z)).
+      - rewrite (_ : v = snd w u) //= (_ : u = fst w) => //=.
+      - abstract by split; first by []; move=> w; rewrite (_ : w = u).
+    Defined.
+
+    Lemma fwd_bwd : ∀ x, fwd (bwd x) = x.
+    Proof.
+      move=> x.
+      apply: depfunext=> u.
+      rewrite /fwd /bwd /ssr_suff /eq_rect_r //=; cbn.
+      apply: JMeq_eq.
+      simplify_eqs.
+      move: (bwd_subproof _ _)=> v.
+      by rewrite (_ : v = u).
+    Qed.
+
+    Lemma bwd_fwd : forall x, bwd (fwd x) = x.
+    Proof.
+      move=> x.
+      apply: depfunext=> u.
+      apply: depfunext=> v.
+      rewrite /fwd /bwd /ssr_suff /eq_rect_r //=.
+      apply: JMeq_eq.
+      by simplify_eqs.
+    Qed.
+  End iso.
+End Ext.
