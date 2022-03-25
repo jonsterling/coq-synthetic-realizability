@@ -157,6 +157,7 @@ Proof. by move=> iso b; case: (iso b) => a [? _]; exists a. Qed.
 
 
 
+
 Class IsProp (A : Type) :=
   irr : ∀ {x y : A}, x = y.
 

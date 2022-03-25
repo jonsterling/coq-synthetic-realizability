@@ -361,7 +361,7 @@ End ModP.
 
 
 Section SeparatedReflection.
-  Context P `{Mod.SimpleModality P}.
+  Context P `{Mod.DepModality P}.
 
   Definition separated (P : Type → Prop) : Type → Prop :=
     λ A, ∀ x y : A, P (x = y).
@@ -417,6 +417,18 @@ Section SeparatedReflection.
   Global Instance Modal_EqOfSeparated {A} `{Separated A} {x y : A} : Modal P (x = y).
   Proof. by apply: (mod x y). Qed.
 
+  Global Instance DepModality_separated : Mod.DepModality (separated P).
+  Proof.
+    unshelve esplit; first by typeclasses eauto.
+    move=> A B HB f.
+    unshelve esplit.
+    - unshelve apply: Quotient.ind.
+      + by apply: f.
+      + by move=>??; apply: ModP.ind=>?; simplify_eqs.
+    - split=>//=.
+      move=> h <-.
+      by apply: depfunext; apply: Quotient.indp.
+  Defined.
 End SeparatedReflection.
 
 Notation Separated := (λ P, Modal (separated P)).
