@@ -17,13 +17,24 @@ Module Ext.
   Definition el (X : U) : Type :=
     forall z : prop X, part X z.
 
-
-  Definition inU : Type -> U.
+  Definition le : Type -> U.
   Proof.
     move=> A.
     exists True => _.
     apply: A.
   Defined.
+
+  Definition elle_fwd {A} : el (le A) → A.
+  Proof. by rewrite /el /le; apply. Defined.
+
+  Definition elle_bwd {A} : A -> el (le A).
+  Proof. by rewrite /el /le. Defined.
+
+  Definition elle_fwd_bwd {A} : forall x : A, elle_fwd (elle_bwd x) = x.
+  Proof. by []. Qed .
+
+  Definition elle_bwd_fwd {A} : forall x : el (le A), elle_bwd (elle_fwd x) = x.
+  Proof. by move=> ?; apply: funext; case. Qed.
 
 
   Definition extend (ϕ : Prop) (X : ϕ -> U) : U.
